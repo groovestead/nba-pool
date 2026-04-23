@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBA Wins Pool 2025/2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141417;
+    --surface2: #1c1c21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0efe8;
+    --muted: #6b6b72;
+    --accent: #e8f430;
+    --ogge: #a78bfa;
+    --johannes: #34d399;
+    --alexander: #fb923c;
+    --soren: #60a5fa;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); padding: 2.5rem 2rem; min-height: 100vh; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border2); }
+  .eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+  h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 48px; font-weight: 800; line-height: 1; text-transform: uppercase; letter-spacing: -0.01em; }
+  .header-right { text-align: right; font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .updated { font-size: 11px; color: var(--muted); }
+
+  .section-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; margin-top: 36px; }
+
+  .standings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--border); border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+  .standing-card { background: var(--surface); padding: 24px 20px; position: relative; transition: background 0.15s; }
+  .standing-card:hover { background: var(--surface2); }
+  .standing-card.leader { background: var(--surface2); }
+  .standing-card.leader::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
+  .standing-rank { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .leader .standing-rank { color: var(--accent); }
+  .standing-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text); margin-bottom: 16px; }
+  .standing-wins { font-family: 'Barlow Condensed', sans-serif; font-size: 64px; font-weight: 800; line-height: 1; color: var(--text); }
+  .leader .standing-wins { color: var(--accent); }
+  .standing-diff { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  .chart-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px; padding: 24px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rank-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+  .rank-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  .rank-row { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .rank-row:last-child { border-bottom: none; }
+  .rank-row:hover { background: var(--surface2); }
+  .rank-num { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0; }
+  .rank-team { flex: 1; font-size: 14px; color: var(--text); }
+  .rank-owner { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
+  .rank-wins { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; width: 32px; text-align: right; flex-shrink: 0; }
+
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--border); border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+  .metric-cell { background: var(--surface); padding: 20px 18px; transition: background 0.15s; }
+  .metric-cell:hover { background: var(--surface2); }
+  .metric-label { font-size: 11px; font-weight: 500; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .metric-value { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .metric-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .loading { display: flex; align-items: center; gap: 10px; padding: 40px 0; color: var(--muted); font-size: 14px; }
+  .spinner { width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-msg { color: #fb923c; font-size: 13px; padding: 20px 0; }
+
+  .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+
+  .stock-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px; padding: 24px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 2px; }
+  .stock-block { padding: 0 20px; border-right: 1px solid var(--border); }
+  .stock-block:first-child { padding-left: 0; }
+  .stock-block:last-child { border-right: none; }
+  .stock-label { font-size: 11px; font-weight: 500; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .stock-value { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; }
+  .stock-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .up { color: #34d399; }
+  .down { color: #fb923c; }
+
+  @media (max-width: 700px) {
+    .standings-grid, .two-col, .metrics-grid { grid-template-columns: 1fr 1fr; }
+    h1 { font-size: 32px; }
+    .standing-wins { font-size: 44px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="eyebrow">NBA Wins Pool 2025/2026</div>
+    <h1>The Pelle Larsson<br>Fan Club</h1>
+  </div>
+  <div class="header-right">
+    4 deltagare · 28 lag<br>
+    Uppdateras dagligen 08–09<br>
+    <span class="updated" id="updated-time">Hämtar data...</span>
+  </div>
+</div>
+
+<div id="main-content">
+  <div class="loading"><div class="spinner"></div>Hämtar aktuella NBA-standings...</div>
+</div>
+
+<div class="section-label" style="margin-top:36px">Prispotten — Under Armour Inc Class A (UAA)</div>
+<div class="stock-card" id="stock-card">
+  <div class="stock-block">
+    <div class="stock-label">Aktuell kurs</div>
+    <div class="stock-value" id="s-price" style="color:var(--accent)">—</div>
+    <div class="stock-sub" id="s-change">Hämtar...</div>
+  </div>
+  <div class="stock-block">
+    <div class="stock-label">Antal aktier</div>
+    <div class="stock-value" id="s-shares" style="color:var(--text)">—</div>
+    <div class="stock-sub">köpta 20 sep 2025</div>
+  </div>
+  <div class="stock-block">
+    <div class="stock-label">Portföljvärde</div>
+    <div class="stock-value" id="s-value" style="color:var(--text)">—</div>
+    <div class="stock-sub" id="s-value-sub">i SEK</div>
+  </div>
+  <div class="stock-block">
+    <div class="stock-label">Utveckling</div>
+    <div class="stock-value" id="s-pct">—</div>
+    <div class="stock-sub" id="s-pct-sub">sedan köp</div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>The Pelle Larsson Fan Club · NBA Wins Pool 2025/2026</span>
+  <span id="data-source" style="color:var(--muted);font-size:11px;">Data: ESPN</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  const SHEET_ID = '1wtIpLeegdc9yH8AFEJIrohDDGnyrFHWzOvajY3oX_ak';
+
+  const COLORS = { Ogge: '#a78bfa', Johannes: '#34d399', Alexander: '#fb923c', Sören: '#60a5fa' };
+
+  const ESPN_NAME_MAP = {
+    'LA Clippers': 'Los Angeles Clippers',
+  };
+
+  const CORS = 'https://api.allorigins.win/raw?url=';
+
+  async function fetchSheetCSV(gid) {
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+    const res = await fetch(CORS + encodeURIComponent(sheetUrl));
+    if (!res.ok) throw new Error('Kunde inte läsa Google Sheet (HTTP ' + res.status + '). Kontrollera att sheetet är inställt på "Alla med länken kan visa".');
+    return res.text();
+  }
+
+  function parseCSV(text) {
+    return text.trim().split('\n').map(row => {
+      const cells = [];
+      let cur = '', inQ = false;
+      for (const ch of row) {
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { cells.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      cells.push(cur.trim());
+      return cells;
+    });
+  }
+
+  async function fetchSheetData() {
+    // Sammanställning = gid 0, Draft = gid 1
+    const [summaryCSV, draftCSV] = await Promise.all([
+      fetchSheetCSV(0),
+      fetchSheetCSV(1),
+    ]);
+
+    const summaryRows = parseCSV(summaryCSV);
+    const draftRows   = parseCSV(draftCSV);
+
+    // Sammanställning: row 0 = headers (Team Søren, Vinster, Team Jay, Vinster, Team Heat, Vinster, Team Strandballe, Vinster)
+    // row 1 = values
+    const headers = summaryRows[0];
+    const values  = summaryRows[1] || [];
+    const poolStandings = [];
+    for (let i = 0; i < headers.length; i += 2) {
+      const teamName = headers[i];
+      const wins = parseFloat(values[i + 1]) || 0;
+      if (teamName) poolStandings.push({ team: teamName, wins });
+    }
+    poolStandings.sort((a, b) => b.wins - a.wins);
+
+    // Draft: row 1 = headers (Tillgängliga lag, , Ogge, Vinster, Johannes, Vinster, Alexander, Vinster, Sören, Vinster)
+    const draftHeader = draftRows[1] || [];
+    const playerCols = {};
+    for (let i = 0; i < draftHeader.length; i++) {
+      const h = draftHeader[i];
+      if (['Ogge','Johannes','Alexander','Sören'].includes(h)) {
+        playerCols[h] = { teamCol: i, winsCol: i + 1 };
+      }
+    }
+
+    const DRAFT = { Ogge: [], Johannes: [], Alexander: [], Sören: [] };
+    for (let r = 2; r < draftRows.length; r++) {
+      const row = draftRows[r];
+      for (const [player, cols] of Object.entries(playerCols)) {
+        const team = row[cols.teamCol];
+        const wins = parseFloat(row[cols.winsCol]);
+        if (team && !isNaN(wins) && wins > 0) {
+          DRAFT[player].push([team, wins]);
+        }
+      }
+    }
+
+    return { poolStandings, DRAFT };
+  }
+
+  function render({ poolStandings, DRAFT }) {
+    const players = Object.keys(DRAFT);
+    const colors  = players.map(p => COLORS[p] || '#888');
+    const leader  = poolStandings[0]?.wins || 0;
+
+    const playerTotals = {};
+    players.forEach(p => { playerTotals[p] = DRAFT[p].reduce((s,[,w])=>s+w,0); });
+
+    const teamData = players.map(p => DRAFT[p].map(([t,w]) => [
+      t.replace('Los Angeles ','LA ').replace('Oklahoma City ','OKC ')
+       .replace('Golden State ','GS ').replace('New Orleans ','NO ')
+       .replace('Portland Trail Blazers','Portland'), w
+    ]));
+
+    const allTeams = players.flatMap(p => DRAFT[p].map(([t,w]) => ({ team:t, player:p, wins:w })))
+      .sort((a,b) => b.wins - a.wins);
+
+    const top5    = allTeams.slice(0,5);
+    const bottom5 = allTeams.slice(-5).reverse();
+
+    const avgs   = players.map(p => { const ws=DRAFT[p].map(([,w])=>w); return Math.round(ws.reduce((a,b)=>a+b,0)/ws.length*10)/10; });
+    const bests  = players.map(p => Math.max(...DRAFT[p].map(([,w])=>w)));
+    const worsts = players.map(p => Math.min(...DRAFT[p].map(([,w])=>w)));
+
+    const bestPlayer  = players[avgs.indexOf(Math.max(...avgs))];
+    const worstPlayer = players[avgs.indexOf(Math.min(...avgs))];
+    const bestTeam    = allTeams[0];
+    const worstTeam   = allTeams[allTeams.length-1];
+
+    const ownerBadge = p => `<span class="rank-owner" style="background:${COLORS[p]}22;color:${COLORS[p]}">${p}</span>`;
+
+    document.getElementById('main-content').innerHTML = `
+      <div class="section-label" style="margin-top:0">Ställning — Sammanställning</div>
+      <div class="standings-grid">
+        ${poolStandings.map((entry, i) => `
+          <div class="standing-card ${i===0?'leader':''}">
+            <div class="standing-rank">0${i+1}${i===0?' · Ledare':''}</div>
+            <div class="standing-name">${entry.team}</div>
+            <div class="standing-wins">${entry.wins}</div>
+            <div class="standing-diff">${i===0?'vinster':'−'+(leader-entry.wins)+' från ledaren'}</div>
+          </div>`).join('')}
+      </div>
+
+      <div class="section-label">Vinster per deltagare (draft-fliken)</div>
+      <div class="chart-card">
+        <div class="legend">
+          ${players.map((p,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${p} ${playerTotals[p]}</span>`).join('')}
+        </div>
+        <div style="position:relative;width:100%;height:300px;">
+          <canvas id="barChart" role="img" aria-label="Stapeldiagram med vinster per lag och deltagare"></canvas>
+        </div>
+      </div>
+
+      <div class="section-label">Bästa och sämsta lag</div>
+      <div class="two-col">
+        <div class="rank-card">
+          <div class="rank-card-header">Bästa lag</div>
+          ${top5.map((e,i)=>`<div class="rank-row">
+            <span class="rank-num">${i+1}</span>
+            <span class="rank-team">${e.team}</span>
+            ${ownerBadge(e.player)}
+            <span class="rank-wins" style="color:${COLORS[e.player]}">${e.wins}</span>
+          </div>`).join('')}
+        </div>
+        <div class="rank-card">
+          <div class="rank-card-header">Sämsta lag</div>
+          ${bottom5.map((e,i)=>`<div class="rank-row">
+            <span class="rank-num">${allTeams.length-i}</span>
+            <span class="rank-team">${e.team}</span>
+            ${ownerBadge(e.player)}
+            <span class="rank-wins" style="color:var(--muted)">${e.wins}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="section-label">Rolig statistik</div>
+      <div class="metrics-grid">
+        <div class="metric-cell"><div class="metric-label">Bäst snitt per lag</div><div class="metric-value">${Math.max(...avgs).toFixed(1).replace('.',',')}</div><div class="metric-sub">${bestPlayer}</div></div>
+        <div class="metric-cell"><div class="metric-label">Sämst snitt per lag</div><div class="metric-value">${Math.min(...avgs).toFixed(1).replace('.',',')}</div><div class="metric-sub">${worstPlayer}</div></div>
+        <div class="metric-cell"><div class="metric-label">Bästa enskilda lag</div><div class="metric-value">${bestTeam.wins}</div><div class="metric-sub">${bestTeam.team.split(' ').pop()} · ${bestTeam.player}</div></div>
+        <div class="metric-cell"><div class="metric-label">Sämsta enskilda lag</div><div class="metric-value">${worstTeam.wins}</div><div class="metric-sub">${worstTeam.team.split(' ').pop()} · ${worstTeam.player}</div></div>
+      </div>
+
+      <div class="section-label">Spridning inom varje spelares trupp</div>
+      <div class="chart-card" style="margin-bottom:1rem;">
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:rgba(200,200,200,0.4)"></span>Bäst</span>
+          <span class="legend-item"><span class="legend-dot" style="background:rgba(200,200,200,0.2)"></span>Snitt</span>
+          <span class="legend-item"><span class="legend-dot" style="background:rgba(200,200,200,0.08)"></span>Sämst</span>
+        </div>
+        <div style="position:relative;width:100%;height:260px;">
+          <canvas id="spreadChart" role="img" aria-label="Spridningsdiagram per spelare"></canvas>
+        </div>
+      </div>
+    `;
+
+    Chart.defaults.color = '#6b6b72';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+    const tt = { backgroundColor:'#1c1c21', borderColor:'rgba(255,255,255,0.14)', borderWidth:1, titleColor:'#f0efe8', bodyColor:'#6b6b72', padding:10 };
+
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: teamData[0].map((_,i) => 'Lag '+(i+1)),
+        datasets: players.map((p,i) => ({
+          label: p, data: teamData[i].map(t=>t[1]),
+          backgroundColor: colors[i]+'44', borderColor: colors[i], borderWidth:1, borderRadius:2
+        }))
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins: { legend:{display:false}, tooltip:{...tt, callbacks:{
+          title: (items) => DRAFT[players[items[0].datasetIndex]][items[0].dataIndex][0],
+          label: (item) => ' '+players[item.datasetIndex]+': '+item.raw+' vinster'
+        }}},
+        scales: {
+          x: { grid:{display:false}, ticks:{color:'#6b6b72'} },
+          y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b6b72'}, min:0, max:75 }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('spreadChart'), {
+      type: 'bar',
+      data: {
+        labels: players,
+        datasets: [
+          { label:'Bäst',  data:bests,  backgroundColor:colors.map(c=>c+'55'), borderColor:colors, borderWidth:1, borderRadius:2 },
+          { label:'Snitt', data:avgs,   backgroundColor:colors.map(c=>c+'22'), borderColor:colors.map(c=>c+'66'), borderWidth:1, borderRadius:2 },
+          { label:'Sämst', data:worsts, backgroundColor:'rgba(255,255,255,0.05)', borderColor:'rgba(255,255,255,0.15)', borderWidth:1, borderRadius:2 }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins: { legend:{display:false}, tooltip:{...tt, callbacks:{ label:(item)=>' '+item.dataset.label+': '+item.raw }} },
+        scales: {
+          x: { grid:{display:false}, ticks:{color:'#6b6b72'} },
+          y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b6b72'}, min:0, max:82 }
+        }
+      }
+    });
+
+    const now = new Date();
+    document.getElementById('updated-time').textContent = 'Uppdaterad ' + now.toLocaleDateString('sv-SE') + ' kl ' + now.toLocaleTimeString('sv-SE', {hour:'2-digit',minute:'2-digit'});
+  }
+
+  function showError(msg) {
+    document.getElementById('main-content').innerHTML = `<div class="error-msg">Kunde inte hämta data: ${msg}<br><small style="color:var(--muted)">Kontrollera att Google Sheet är inställt på "Alla med länken kan visa" och ladda om sidan.</small></div>`;
+  }
+
+  fetchSheetData()
+    .then(data => render(data))
+    .catch(err => showError(err.message));
+
+  const PURCHASE_SEK = 800;
+  const PURCHASE_DATE = '2025-09-20';
+  const TICKER = 'UAA';
+  const PROXY = 'https://corsproxy.io/?';
+
+  async function fetchStock() {
+    try {
+      const url = PROXY + encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?interval=1d&range=1d`);
+      const res = await fetch(url);
+      const data = await res.json();
+      const quote = data?.chart?.result?.[0]?.meta;
+      if (!quote) throw new Error('ingen data');
+
+      const priceUSD = quote.regularMarketPrice;
+      const currency = quote.currency || 'USD';
+
+      const fxUrl = PROXY + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/USDSEK=X?interval=1d&range=1d');
+      const fxRes = await fetch(fxUrl);
+      const fxData = await fxRes.json();
+      const usdSek = fxData?.chart?.result?.[0]?.meta?.regularMarketPrice || 10.5;
+
+      const purchaseUrl = PROXY + encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?interval=1d&period1=${Math.floor(new Date(PURCHASE_DATE).getTime()/1000)}&period2=${Math.floor(new Date(PURCHASE_DATE).getTime()/1000) + 86400}`);
+      const purchaseRes = await fetch(purchaseUrl);
+      const purchaseData = await purchaseRes.json();
+      const purchasePriceUSD = purchaseData?.chart?.result?.[0]?.meta?.chartPreviousClose || purchaseData?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
+
+      const purchasePriceSEK = purchasePriceUSD * usdSek;
+      const shares = PURCHASE_SEK / purchasePriceSEK;
+      const currentValueSEK = shares * priceUSD * usdSek;
+      const changePct = ((currentValueSEK - PURCHASE_SEK) / PURCHASE_SEK) * 100;
+      const isUp = changePct >= 0;
+
+      document.getElementById('s-price').textContent = priceUSD.toFixed(2) + ' USD';
+      document.getElementById('s-change').textContent = '1 USD = ' + usdSek.toFixed(2) + ' SEK';
+      document.getElementById('s-shares').textContent = shares.toFixed(2);
+      document.getElementById('s-value').textContent = Math.round(currentValueSEK) + ' kr';
+      document.getElementById('s-value-sub').textContent = 'köpt för ' + PURCHASE_SEK + ' kr';
+      document.getElementById('s-pct').textContent = (isUp ? '+' : '') + changePct.toFixed(1) + '%';
+      document.getElementById('s-pct').className = 'stock-value ' + (isUp ? 'up' : 'down');
+      document.getElementById('s-pct-sub').textContent = (isUp ? '+' : '') + Math.round(currentValueSEK - PURCHASE_SEK) + ' kr sedan köp';
+    } catch(e) {
+      document.getElementById('s-change').textContent = 'Kunde inte hämta kurs';
+      document.getElementById('s-price').textContent = '—';
+      console.warn('Stock fetch failed:', e);
+    }
+  }
+
+  fetchStock();
+</script>
+</body>
+</html>
