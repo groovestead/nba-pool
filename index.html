@@ -171,10 +171,10 @@
   }
 
   async function fetchSheetData() {
-    // Sammanställning = gid 0, Draft = gid 1
+    // Sammanställning = gid 1930274543, Draft = gid 1923444591
     const [summaryCSV, draftCSV] = await Promise.all([
-      fetchSheetCSV(0),
-      fetchSheetCSV(1),
+      fetchSheetCSV(1930274543),
+      fetchSheetCSV(1923444591),
     ]);
 
     const summaryRows = parseCSV(summaryCSV);
