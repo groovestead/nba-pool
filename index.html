@@ -147,11 +147,11 @@
     'LA Clippers': 'Los Angeles Clippers',
   };
 
-  const CORS = 'https://api.allorigins.win/raw?url=';
+  const CORS = '';
 
   async function fetchSheetCSV(gid) {
     const sheetUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-    const res = await fetch(CORS + encodeURIComponent(sheetUrl));
+    const res = await fetch(sheetUrl);
     if (!res.ok) throw new Error('Kunde inte läsa Google Sheet (HTTP ' + res.status + '). Kontrollera att sheetet är inställt på "Alla med länken kan visa".');
     return res.text();
   }
