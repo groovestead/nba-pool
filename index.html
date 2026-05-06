@@ -374,28 +374,24 @@
     .catch(err => showError(err.message));
 
   const PURCHASE_SEK = 800;
-  // Köpkurs UAA den 20 sep 2025: 4.48 USD, växelkurs 10.38 SEK/USD = 46.50 SEK/aktie → 800/46.50 = 17.20 aktier
   const SHARES = 17.20;
   const PURCHASE_PRICE_USD = 4.48;
 
   async function fetchStock() {
     try {
-      // Hämta aktuell UAA-kurs via Frankfurter (valuta) + Yahoo Finance v8 direkt
-      // Primär källa: Yahoo Finance query2 (mer stabil än query1)
-      const res = await fetch('https://query2.finance.yahoo.com/v8/finance/chart/UAA?interval=1d&range=1d', {
-        headers: { 'User-Agent': 'Mozilla/5.0' }
-      });
+      // Använder corsproxy.io för Yahoo Finance (fungerar från GitHub Pages)
+      const proxy = 'https://corsproxy.io/?';
+      const res = await fetch(proxy + encodeURIComponent('https://query2.finance.yahoo.com/v8/finance/chart/UAA?interval=1d&range=1d'));
       const data = await res.json();
       const priceUSD = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
       if (!priceUSD) throw new Error('ingen kurs');
 
-      // Hämta USD/SEK via Frankfurter API (gratis, stabil, ingen nyckel behövs)
+      // Frankfurter API för USD/SEK – fungerar utan proxy
       const fxRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=SEK');
       const fxData = await fxRes.json();
       const usdSek = fxData?.rates?.SEK || 10.5;
 
       const currentValueSEK = SHARES * priceUSD * usdSek;
-      const purchaseValueSEK = SHARES * PURCHASE_PRICE_USD * usdSek;
       const changePct = ((currentValueSEK - PURCHASE_SEK) / PURCHASE_SEK) * 100;
       const isUp = changePct >= 0;
 
