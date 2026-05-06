@@ -171,10 +171,12 @@
   }
 
   async function fetchSheetData() {
-    // Sammanställning = gid 1930274543, Draft = gid 1923444591
+    const toJSON = (gid) =>
+      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
+
     const [summaryCSV, draftCSV] = await Promise.all([
-      fetchSheetCSV(1930274543),
-      fetchSheetCSV(1923444591),
+      fetch(toJSON(1930274543)).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }),
+      fetch(toJSON(1923444591)).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }),
     ]);
 
     const summaryRows = parseCSV(summaryCSV);
@@ -372,40 +374,34 @@
     .catch(err => showError(err.message));
 
   const PURCHASE_SEK = 800;
-  const PURCHASE_DATE = '2025-09-20';
-  const TICKER = 'UAA';
-  const PROXY = 'https://corsproxy.io/?';
+  // Köpkurs UAA den 20 sep 2025: 4.48 USD, växelkurs 10.38 SEK/USD = 46.50 SEK/aktie → 800/46.50 = 17.20 aktier
+  const SHARES = 17.20;
+  const PURCHASE_PRICE_USD = 4.48;
 
   async function fetchStock() {
     try {
-      const url = PROXY + encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?interval=1d&range=1d`);
-      const res = await fetch(url);
+      // Hämta aktuell UAA-kurs via Frankfurter (valuta) + Yahoo Finance v8 direkt
+      // Primär källa: Yahoo Finance query2 (mer stabil än query1)
+      const res = await fetch('https://query2.finance.yahoo.com/v8/finance/chart/UAA?interval=1d&range=1d', {
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      });
       const data = await res.json();
-      const quote = data?.chart?.result?.[0]?.meta;
-      if (!quote) throw new Error('ingen data');
+      const priceUSD = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if (!priceUSD) throw new Error('ingen kurs');
 
-      const priceUSD = quote.regularMarketPrice;
-      const currency = quote.currency || 'USD';
-
-      const fxUrl = PROXY + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/USDSEK=X?interval=1d&range=1d');
-      const fxRes = await fetch(fxUrl);
+      // Hämta USD/SEK via Frankfurter API (gratis, stabil, ingen nyckel behövs)
+      const fxRes = await fetch('https://api.frankfurter.app/latest?from=USD&to=SEK');
       const fxData = await fxRes.json();
-      const usdSek = fxData?.chart?.result?.[0]?.meta?.regularMarketPrice || 10.5;
+      const usdSek = fxData?.rates?.SEK || 10.5;
 
-      const purchaseUrl = PROXY + encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?interval=1d&period1=${Math.floor(new Date(PURCHASE_DATE).getTime()/1000)}&period2=${Math.floor(new Date(PURCHASE_DATE).getTime()/1000) + 86400}`);
-      const purchaseRes = await fetch(purchaseUrl);
-      const purchaseData = await purchaseRes.json();
-      const purchasePriceUSD = purchaseData?.chart?.result?.[0]?.meta?.chartPreviousClose || purchaseData?.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.[0];
-
-      const purchasePriceSEK = purchasePriceUSD * usdSek;
-      const shares = PURCHASE_SEK / purchasePriceSEK;
-      const currentValueSEK = shares * priceUSD * usdSek;
+      const currentValueSEK = SHARES * priceUSD * usdSek;
+      const purchaseValueSEK = SHARES * PURCHASE_PRICE_USD * usdSek;
       const changePct = ((currentValueSEK - PURCHASE_SEK) / PURCHASE_SEK) * 100;
       const isUp = changePct >= 0;
 
       document.getElementById('s-price').textContent = priceUSD.toFixed(2) + ' USD';
       document.getElementById('s-change').textContent = '1 USD = ' + usdSek.toFixed(2) + ' SEK';
-      document.getElementById('s-shares').textContent = shares.toFixed(2);
+      document.getElementById('s-shares').textContent = SHARES.toFixed(2);
       document.getElementById('s-value').textContent = Math.round(currentValueSEK) + ' kr';
       document.getElementById('s-value-sub').textContent = 'köpt för ' + PURCHASE_SEK + ' kr';
       document.getElementById('s-pct').textContent = (isUp ? '+' : '') + changePct.toFixed(1) + '%';
